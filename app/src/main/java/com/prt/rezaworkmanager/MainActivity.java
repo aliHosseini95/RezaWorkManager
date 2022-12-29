@@ -41,13 +41,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void count(int number) {
         WorkManager workManager = WorkManager.getInstance(getBaseContext());
-        WorkRequest workRequest = new OneTimeWorkRequest.Builder(TempWorker.class).build();
+        WorkRequest workRequest = new OneTimeWorkRequest
+                .Builder(TempWorker.class)
+                .setInputData(new Data.Builder().putInt(NUMBER_KEY, 30).build())
+                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                .build();
         workManager.enqueue(workRequest);
         workManager.getWorkInfoByIdLiveData(workRequest.getId()).observe(this, new Observer<WorkInfo>() {
             @Override
             public void onChanged(WorkInfo workInfo) {
                 if (workInfo.getState().equals(WorkInfo.State.FAILED)) {
                     Log.d(DEBUG_TAG, "onChanged: Work Failed");
+                }
+                if (workInfo.getState().equals(WorkInfo.State.SUCCEEDED)) {
+                    Log.d(DEBUG_TAG, "onChanged: Work Succeeded");
                 }
             }
         });
